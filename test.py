@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+import os
 import shutil
 import sys
 from typing import Optional
@@ -25,9 +26,11 @@ def get_taken_datetime(path: Path) -> Optional[datetime]:
                         try:
                             return datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
                         except (ValueError, TypeError):
+                            print(f"Unknown date format in EXIF for {path}: {value}")
                             pass
     except Exception:
-        pass  # unsupported format or corrupted EXIF
+        print(f"Could not read EXIF data from {path}. Falling back to file modification time.")
+        pass
 
     return datetime.fromtimestamp(path.stat().st_mtime)
 
@@ -70,7 +73,7 @@ def ask_parent_folder() -> Path:
 def ask_move_or_copy() -> bool:
     """Return True for move, False for copy."""
     while True:
-        choice = input("Move files instead of copying? [y/N]: ").strip().lower()
+        choice = input("Move files instead of copying? [Y/N]: ").strip().lower()
         if choice in ("y", "yes"):
             return True
         if choice in ("n", "no", ""):
@@ -79,6 +82,8 @@ def ask_move_or_copy() -> bool:
 
 
 def main() -> None:
+    # clear command line in console
+    os.system('cls' if os.name == 'nt' else 'clear')
     root = ask_parent_folder()
     move_files = ask_move_or_copy()
 
